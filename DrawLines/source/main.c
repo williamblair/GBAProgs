@@ -65,17 +65,41 @@ static void drawLine(int x1, int y1, int x2, int y2, unsigned short color)
 
 int main(void)
 {
+    // since the line function assumes x1<=x2, y1<=y2
+    // we'll just use a random length for x and y and always
+    // add it to x1/y1
+    int x1, deltax;
+    int y1, deltay;
+    
+    // random color
+    int r,g,b;
     
     // Init the GBA vid system
     setVidMode(MODE_3 | BG2_ENABLE);
     
-    // Set a pixel color in memory
-    //drawPixel(120, 80, RGB(31,31,31));
-    
-    drawLine(10, 10, 100, 10, 0xFFFF);
-    
     // infinite loop
-    for(;;){}
+    for(;;)
+    {
+        // starting point
+        x1 = rand() % 240;
+        y1 = rand() % 160;
+        
+        // how far to go x and y
+        deltax = rand() % 240;
+        deltay = rand() % 160;
+        
+        // make sure we don't go off the screen
+        if(x1+deltax >= 240) deltax -= 240 - (x1+deltax);
+        if(y1+deltay >= 160) deltay -= 160 - (y1+deltay);
+        
+        // colors
+        r = rand() % 31;
+        g = rand() % 31;
+        b = rand() % 31;
+        
+        // draw the line
+        drawLine(x1,y1, x1+deltax, y1+deltay, RGB(r,g,b));
+    }
     
     return 0;
 }
