@@ -8,8 +8,8 @@
 #include "../Untitled.raw.c"
 
 // copy a given array into the video buffer
-#define drawArray(arr) \
-    (memcpy((void*)REG_VIDBUF, (void*)arr, sizeof(arr)))
+#define drawArray(arr, size) \
+    (memcpy((void*)REG_VIDBUF, (void*)arr, size))
 
 int main(void)
 {
@@ -17,7 +17,7 @@ int main(void)
     setVidMode(MODE_3 | BG2_ENABLE);
 
     // test...    
-    drawArray(Untitled_Bitmap);
+    drawArray(Untitled_Bitmap, sizeof(Untitled_Bitmap));
     
     printf("Test HELLO WORLD!\n");
     
