@@ -13,10 +13,6 @@ unsigned short *vidBufs[] = {
 };
 int curBuf = 0;
 
-// vblank macro
-#define waitVBlank() \
-    while(*(volatile unsigned short *)REG_SCANLINE < 160)
-
 /////////////////////////////////////////////////////////////
 // Function: main()
 // Entry point for the program
