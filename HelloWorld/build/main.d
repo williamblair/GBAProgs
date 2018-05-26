@@ -1,4 +1,4 @@
-main.o: /home/ubuntu/workspace/source/main.c \
- /home/ubuntu/workspace/source/bjgba.h
+main.o: C:/Users/bj/programming/gba/GBAProgs/HelloWorld/source/main.c \
+ c:\users\bj\programming\gba\gbaprogs\bjgba.h
 
-/home/ubuntu/workspace/source/bjgba.h:
+c:\users\bj\programming\gba\gbaprogs\bjgba.h:

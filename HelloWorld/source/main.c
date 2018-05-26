@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "bjgba.h"
+#include "../../bjgba.h"
 
 int main(void)
 {

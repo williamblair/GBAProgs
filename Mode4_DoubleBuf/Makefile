@@ -28,6 +28,9 @@ INCLUDES	:= include
 DATA		:= font
 MUSIC		:=
 
+# bj added
+EMU = /c/Compilers/ham-sdk/tools/win32/vbawin.exe
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
@@ -125,6 +128,10 @@ clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).gba 
  
+ 
+# bj added
+run:
+	$(EMU) $(TARGET).gba
  
 #---------------------------------------------------------------------------------
 else

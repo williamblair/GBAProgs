@@ -28,6 +28,9 @@ INCLUDES	:= include
 DATA		:= font
 MUSIC		:=
 
+# bj added - gba emulator to run the rom with
+EMU = /c/Compilers/ham-sdk/tools/win32/vbawin.exe
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
@@ -124,7 +127,10 @@ $(BUILD):
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).gba 
- 
+
+# bj added for gba emu
+run:
+	$(EMU) $(TARGET).gba
  
 #---------------------------------------------------------------------------------
 else

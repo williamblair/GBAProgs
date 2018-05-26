@@ -1,4 +1,5 @@
-main.o: /home/ubuntu/workspace/Mode4_DoubleBuf/source/main.c \
- /home/ubuntu/workspace/Mode4_DoubleBuf/source/../../bjgba.h
+main.o: \
+ C:/Users/bj/programming/gba/GBAProgs/Mode4_DoubleBuf/source/main.c \
+ c:\users\bj\programming\gba\gbaprogs\bjgba.h
 
-/home/ubuntu/workspace/Mode4_DoubleBuf/source/../../bjgba.h:
+c:\users\bj\programming\gba\gbaprogs\bjgba.h:
