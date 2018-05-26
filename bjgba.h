@@ -1,9 +1,10 @@
 /* Defines and such */
 
 // Registers
-#define REG_DISPCNT 0x4000000
-#define REG_PALETTE 0x5000000
-#define REG_VIDBUF  0x6000000
+#define REG_DISPCNT  0x4000000
+#define REG_SCANLINE 0x4000006
+#define REG_PALETTE  0x5000000
+#define REG_VIDBUF   0x6000000
 
 // Video modes
 #define MODE_3 0x3
@@ -23,10 +24,11 @@
 #define RGB(r,g,b) \
     ((r) + ((g)<<5) + ((b)<<10))
     
-// draw a pixel in mode 4
-static inline void drawPixel4(int x, int y, int color)
+// draw a pixel in mode 4 to a specified buffer (for double buff)
+static inline void drawPixel4_buf(int x, int y, int color, void *buf)
 {
-    unsigned short *vidBuf = (unsigned short *)REG_VIDBUF;
+    // pointer to our buffer to draw to
+    unsigned short *vidBuf = (unsigned short *)buf;
     
     // read the existing value, accessing divided by two
     // since two pixels are stuffed into a single unsigned short
@@ -47,4 +49,8 @@ static inline void drawPixel4(int x, int y, int color)
     
     return;
 }
+
+// standard (no double buf) mode 4 pixel, just draw reguarly to vid buf
+#define drawPixel4(x, y, color) \
+    (drawPixel4_buf(x, y, color, (void*)REG_VIDBUF))
     
