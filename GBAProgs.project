@@ -57,6 +57,7 @@
     <File Name="Mode4_DoubleBuf/Makefile"/>
   </VirtualDirectory>
   <File Name="bjgba.h"/>
+  <File Name="bjfont.h"/>
   <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
@@ -159,6 +160,12 @@ C:\Compilers\devkitPro\devkitARM\arm-none-eabi\include
     <File Name="Mode5_DoubleBuf/Makefile"/>
     <VirtualDirectory Name="source">
       <File Name="Mode5_DoubleBuf/source/main.c"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="DrawText_Mode3">
+    <File Name="DrawText_Mode3/Makefile"/>
+    <VirtualDirectory Name="source">
+      <File Name="DrawText_Mode3/source/main.c"/>
     </VirtualDirectory>
   </VirtualDirectory>
 </CodeLite_Project>

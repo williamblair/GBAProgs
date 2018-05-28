@@ -31,7 +31,7 @@
 
 // Mode 3 pixel plot (This is default for the moment)
 #define drawPixel3(x, y, color) \
-    (((unsigned short *)REG_VIDBUF)[y*240+x] = (unsigned short)color)
+    (((unsigned short *)REG_VIDBUF)[(y)*240+(x)] = (unsigned short)(color))
 
 // default drawpixel
 #define drawPixel drawPixel3
