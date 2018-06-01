@@ -4,14 +4,38 @@
 /**                 REGISTERS                          **/
 /********************************************************/
 #define REG_DISPCNT  0x4000000
+#define REG_DISPSTAT 0x4000004
 #define REG_SCANLINE 0x4000006
 #define REG_PALETTE  0x5000000
 #define REG_VIDBUF   0x6000000
 
+#define DMA_ENABLE   0x8000000
+#define DMA_IMMED    0x0000000
+
+#define DMA_16       0x0000000
+#define DMA_32       0x0400000
+
+#define REG_BG0HOFS  0x4000010
+#define REG_BG0VOFS  0x4000012
+
+#define REG_BG0CNT   0x4000008
+#define REG_BG1CNT   0x400000A
+#define REG_BG2CNT   0x400000C
+#define REG_BG3CNT   0x400000E
+
+#define REG_DMA3SAD  0x40000D4
+#define REG_DMA3DAD  0x40000D8
+#define REG_DMA3CNT  0x40000DC
+
+#define DMA_32NOW (DMA_ENABLE | DMA_IMMED | DMA_32)
+#define DMA_16NOW (DMA_ENABLE | DMA_IMMED | DMA_16)
+
+#define REG_BUTTONS  0x4000130
 
 /********************************************************/
 /**                   VIDEO MODES                      **/
 /********************************************************/
+#define MODE_0 0x0
 #define MODE_3 0x3
 #define MODE_4 0x4
 #define MODE_5 0x5
@@ -21,9 +45,37 @@
 /********************************************************/
 /**                    BACKGROUNDS                     **/
 /********************************************************/
+#define BG0_ENABLE 0x100
+#define BG1_ENABLE 0x200
 #define BG2_ENABLE 0x400
+#define BG3_ENABLE 0x800
+
+#define BG_COLOR256 0x80
+
+#define TEXTBG_SIZE_256x256 0x0000
+#define TEXTBG_SIZE_256x512 0x8000
+#define TEXTBG_SIZE_512x256 0x4000
+#define TEXTBG_SIZE_512x512 0xC000
 
 
+/********************************************************/
+/**                   MODE 0 MACROS                    **/
+/********************************************************/
+static inline void dmaFastCopy(void *src, void *dest, 
+                    unsigned int count, unsigned int mode)
+{
+    if(mode == DMA_16NOW || mode == DMA_32NOW)
+    {
+        *(volatile unsigned int *)REG_DMA3SAD = (unsigned int)src;
+        *(volatile unsigned int *)REG_DMA3DAD = (unsigned int)dest;
+    }   *(volatile unsigned int *)REG_DMA3CNT = count | mode;
+}
+
+// background memory offsets
+#define CharBaseBlock(n) \
+    (((n)*0x4000)+0x6000000)
+#define ScreenBaseBlock(n) \
+    (((n)*0x800)+0x6000000)
 
 /********************************************************/
 /**                   MODE 3 MACROS                    **/
