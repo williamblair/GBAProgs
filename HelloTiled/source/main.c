@@ -43,6 +43,10 @@ vushort *dispstat = (vushort *)REG_DISPSTAT;
 #define BUTTON_DOWN  128
 vuint *buttons = (vuint *)REG_BUTTONS;
 
+// mode 0 vblank?
+#define waitVBlank_mode0() \
+    while(*dispstat & 1)
+
 int main(void)
 {
     int x=0, y=0;
@@ -71,14 +75,16 @@ int main(void)
     for(;;)
     {
         // might need to change this...
-        waitVBlank();
+        //waitVBlank();
+        waitVBlank_mode0();
         
         // use hardware background scrolling
         *bg0vofs = y;
         *bg0hofs = x;
         
         // might need to change this...
-        waitVBlank();
+        //waitVBlank();
+        waitVBlank_mode0();
         
         // delay a bit
         for(n=0; n<4000; n++);
