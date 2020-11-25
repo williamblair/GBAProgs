@@ -1,0 +1,1 @@
+gfx2gba -fsrc -ppeppers.pal peppers.bmp

@@ -1,0 +1,1 @@
+gfx2gba -fsrc -c32k peppers.bmp

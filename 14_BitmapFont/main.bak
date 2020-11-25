@@ -1,0 +1,63 @@
+// BitmapFont
+// 11/22/2020
+
+#include "../BitmapFont.h"
+
+#define REG_DISPCNT *(unsigned long*)0x04000000
+#define MODE_3      0x3
+#define BG_ENABLE   0x400
+
+#define RGB(r,g,b) (unsigned short)(r | (g << 5) | (b << 10))
+
+// mode 3 draw pixel
+static inline void DrawPixel3(int x, int y, unsigned short color)
+{
+    ((unsigned short*)0x06000000)[y * 240 + x] = color;
+}
+
+static inline void DrawChar(int x, int y, unsigned short color, char val)
+{
+    int fontX, fontY;
+    int draw;
+    
+    for (fontY = 0; fontY < 8; fontY++)
+    {
+        for (fontX = 0; fontX < 8; fontX++)
+        {
+            draw = font[(val-32) * 64 + fontY*8 + fontX];
+            if (draw)
+            {
+                DrawPixel3(x + fontX, y + fontY, color);
+            }
+        }
+    }
+}
+
+static inline void Print(int x, int y, unsigned short color, char* str)
+{
+    int offsetX = 0;
+    while (*str)
+    {
+        DrawChar(x + offsetX, y, color, *str++);
+        offsetX += 8;
+    }
+}
+
+int main(void)
+{
+    // switch to video mode 3 (240x160 16-bit)
+    // 0x3 = 240x160,16bit, 0x400 = background 2
+    REG_DISPCNT = (MODE_3 | BG_ENABLE);
+
+    Print(1, 1, RGB(31, 0, 0), "DRAWTEXT PROGRAM");
+
+    while(1)
+    {
+    }
+
+    return 0;
+}
+
+
+/* END OF FILE */
+
