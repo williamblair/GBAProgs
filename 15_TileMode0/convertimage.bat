@@ -1,0 +1,1 @@
+gfx2gba -fsrc -m -ptest.pal -t8 test.bmp
