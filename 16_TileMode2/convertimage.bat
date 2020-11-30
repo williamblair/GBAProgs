@@ -1,0 +1,1 @@
+gfx2gba -fsrc -m -t8 -rs -ptiles.pal tiles.bmp
