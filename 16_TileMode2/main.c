@@ -2,6 +2,7 @@
 // 11/27/2020
 
 #include <math.h>
+#include <stdio.h>
 
 #define REG_DMA3SAD *(volatile unsigned int*)0x040000D4 // source address
 #define REG_DMA3DAD *(volatile unsigned int*)0x040000D8 // dest address
@@ -82,16 +83,16 @@
 #include "tiles.map.c"
 
 // globals used to rotate the background
-int x_scroll=0,y_scroll=0;
-int DX=0,DY=0;
-int PA,PB,PC,PD;
-int zoom = 2;
-int angle = 0;
-int center_y,center_x;
+//int x_scroll=0,y_scroll=0;
+//int DX=0,DY=0;
+//int PA,PB,PC,PD;
+//int zoom = 2;
+//int angle = 0;
+//int center_y,center_x;
 
 // sin and cosine precalculates
-float SIN[360];
-float COS[360];
+int SIN[360];
+int COS[360];
 
 static inline float deg2rad(const float deg)
 {
@@ -101,28 +102,35 @@ static inline float deg2rad(const float deg)
 void initSinAndCos()
 {
     int i;
-    for (i = 0; i < 360; i++)
+    SIN[0] = (0<<8);
+    COS[0] = (1<<8);
+    for (i = 1; i < 360; i++)
     {
         //SIN[i] = (int)(sin(deg2rad((float)i))*(1<<8));
-        SIN[i] = sin(deg2rad((float)i));
+        //SIN[i] = sin(deg2rad((float)i));
+        SIN[i] = 0;
+
         //COS[i] = (int)(cos(deg2rad((float)i))*(1<<8));
-        COS[i] = cos(deg2rad((float)i));
+        //COS[i] = cos(deg2rad((float)i));
+        COS[i] = 0;
     }
 }
 
+#if 0
 static void RotateBackground(int ang, int cx, int cy, int zoom)
 {
     center_y = (cy * zoom) >> 8;
     center_x = (cx * zoom) >> 8;
-    
+
     DX = x_scroll - center_y * SIN[ang] - center_x * COS[ang];
     DY = y_scroll - center_y * COS[ang] + center_x * SIN[ang];
-    
+
     PA = ((int)(COS[ang] * zoom)) >> 8;
     PB = ((int)(SIN[ang] * zoom)) >> 8;
     PC = ((int)(-SIN[ang] * zoom)) >> 8;
     PD = ((int)(COS[ang] * zoom)) >> 8;
 }
+#endif
 
 static void WaitVBlank(void)
 {
@@ -146,57 +154,55 @@ int main(void)
     int screenbase = 31;
 
     initSinAndCos();
-    
+
     unsigned short* bg2map = (unsigned short*)ScreenBaseBlock(screenbase);
-    
+
     REG_BG2CNT = BG_COLOR256 | ROTBG_SIZE_128x128 |
         (charbase << CHAR_SHIFT) | (screenbase << SCREEN_SHIFT);
 
     SetMode(2 | BG2_ENABLE);
-    
+
     // Copy the palette to memory
     DMAFastCopy((void*)tiles_Palette, (void*)BGPaletteMem, 256, DMA_16NOW);
 
     // Copy the Tile images to memory
     DMAFastCopy((void*)tiles_Tiles, (void*)CharBaseBlock(0), 256/4, DMA_32NOW);
-    
+
     // Copy the tile map into background 2
     DMAFastCopy((void*)tiles_Map, (void*)bg2map, 256 / 4, DMA_32NOW);
 
     while (1)
     {
         WaitVBlank();
-        
+
         // buttons to hardware scroll
-        if (!(BUTTONS & BUTTON_LEFT)) x_scroll--;
-        if (!(BUTTONS & BUTTON_RIGHT)) x_scroll++;
-        if (!(BUTTONS & BUTTON_UP)) y_scroll--;
-        if (!(BUTTONS & BUTTON_DOWN)) y_scroll++;
-        if (!(BUTTONS & BUTTON_A)) zoom--;
-        if (!(BUTTONS & BUTTON_B)) zoom++;
-        if (!(BUTTONS & BUTTON_L)) angle--;
-        if (!(BUTTONS & BUTTON_R)) angle++;
-        
-        if (angle >= 360) angle -= 360;
-        if (angle < 0) angle += 360;
-        
-        RotateBackground(angle, 64, 64, zoom);
-        
+        static int x_scroll = 0;
+        static int y_scroll = 0;
+        static int speed = 256;
+        static int scaleSpeed = 8;
+        static int scale_x = (1<<8) | (0 & 0xFF);
+        static int scale_y = (1<<8) | (0 & 0xFF);
+        if (!(BUTTONS & BUTTON_LEFT)) x_scroll -= speed;
+        if (!(BUTTONS & BUTTON_RIGHT)) x_scroll += speed;
+        if (!(BUTTONS & BUTTON_UP)) y_scroll -= speed;
+        if (!(BUTTONS & BUTTON_DOWN)) y_scroll += speed;
+        if (!(BUTTONS & BUTTON_A)) scale_x += scaleSpeed;
+        if (!(BUTTONS & BUTTON_B)) scale_x -= scaleSpeed;
+        if (!(BUTTONS & BUTTON_L)) scale_y -= scaleSpeed;
+        if (!(BUTTONS & BUTTON_R)) scale_y += scaleSpeed;
+
+        //RotateBackground(angle, 64, 64, zoom);
+
         WaitVBlank();
         
-        REG_BG2X = 64;
-        REG_BG2Y = 64;
-        REG_BG2PA = 0;
-        REG_BG2PB = 0;
-        REG_BG2PC = 0;
-        REG_BG2PD = 0;
-//        REG_BG2X = DX;
-//        REG_BG2Y = DY;
-//        REG_BG2PA = PA;
-//        REG_BG2PB = PB;
-//        REG_BG2PC = PC;
-//        REG_BG2PD = PD;
-        
+        // https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm
+        REG_BG2X = x_scroll;
+        REG_BG2Y = y_scroll;
+        REG_BG2PA = scale_x; // BG2 read X increment - scale background (relative to upper left) in the x direction by (1/register val)
+        REG_BG2PB = (0<<8) | (0x00 & 0xFF); // BG2 write X increment - shear X coords of the BG over Y, relative to upper left. 0 = no shearing, 1.00 makes bg appear to be sheared left as you go down, -1 make bg sheared right as you go down
+        REG_BG2PC = (0<<8) | (0x00 & 0xFF); // BG2 read y increment - shear y coords of bg over X, relative to upper left. 0 = no shearing, ...
+        REG_BG2PD = scale_y; // BG2 write Y increment - scale bg in y directino (relative to upper left) by 1.00/(reg val)
+
         WaitVBlank();
         for (n = 0; n < 100000; n++);
     }
