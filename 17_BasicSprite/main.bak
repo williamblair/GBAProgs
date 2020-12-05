@@ -1,0 +1,158 @@
+/*
+ * Drawing a single tiled sprite
+ * 12/05/2020
+ */
+
+// converted via the grit application
+// https://www.cornac.com/projects/grit
+#include "test.h"
+
+//macro to change the video mode
+#define SetMode(mode) REG_DISPCNT = (mode)
+
+#define REG_DISPCNT *(volatile unsigned short*)0x4000000
+#define BGPaletteMem ((unsigned short*)0x5000000)
+#define REG_VCOUNT *(volatile unsigned short*)0x4000006
+#define REG_DISPSTAT *(volatile unsigned short *)0x4000004
+
+//define object attribute memory state address
+#define SpriteMem ((unsigned short*)0x7000000)
+
+//define object attribute memory image address
+#define SpriteData ((unsigned short*)0x6010000)
+
+//define object attribute memory palette address
+#define SpritePal ((unsigned short*)0x5000200)
+
+//misc sprite constants
+#define OBJ_MAP_2D 0x0
+#define OBJ_MAP_1D 0x40
+#define OBJ_ENABLE 0x1000
+
+//attribute0 stuff
+#define ROTATION_FLAG 0x100
+#define SIZE_DOUBLE 0x200
+#define MODE_NORMAL 0x0
+#define MODE_TRANSPARENT 0x400
+#define MODE_WINDOWED 0x800
+#define MOSAIC 0x1000
+#define COLOR_16 0x0000
+#define COLOR_256 0x2000
+#define SQUARE 0x0
+#define TALL 0x4000
+#define WIDE 0x8000
+
+//attribute1 stuff
+#define ROTDATA(n) ((n) << 9)
+#define HORIZONTAL_FLIP 0x1000
+#define VERTICAL_FLIP 0x2000
+#define SIZE_8 0x0
+#define SIZE_16 0x4000
+#define SIZE_32 0x8000
+#define SIZE_64 0xC000
+
+//attribute2 stuff
+#define PRIORITY(n) ((n) << 10)
+#define PALETTE(n) ((n) << 12)
+
+typedef struct TagSprite
+{
+    unsigned short attrib0;
+    unsigned short attrib1;
+    unsigned short attrib2;
+    unsigned short attrib3;
+} Sprite;
+
+Sprite* spritePtr;
+Sprite sprites[128];
+
+static inline void VSync()
+{
+    while((REG_DISPSTAT & 1));
+}
+
+static inline void UpdateSpriteMemory()
+{
+    int n;
+    unsigned short* temp;
+    temp = (unsigned short*)sprites;
+    
+    for (n = 0; n < 128*4; n++)
+    {
+        SpriteMem[n] = temp[n];
+    }
+}
+
+int main(void)
+{
+    short x = 10;
+    short y = 40;
+    short xdir = 1;
+    short ydir = 1;
+    int charNumber = 0; // a 'character' is a tile index in memory
+    int n;
+    int shipWidth = 64;
+    int shipHeight = 64;
+
+    // mode 2 with sprites, 1D contiguous sprite layout
+    SetMode(2 | OBJ_ENABLE | OBJ_MAP_1D);
+
+    // move all sprites off screen to hide them
+    for (n = 0; n < 128; n++)
+    {
+        sprites[n].attrib0 = 160;
+        sprites[n].attrib1 = 240;
+    }
+
+    // set sprite palette
+    for (n = 0; n < 256; n++)
+    {
+        //SpritePal[n] = master_Palette[n];
+        SpritePal[n] = testPal[n];
+    }
+
+    // set sprite memory
+    //unsigned short* bmpPtr = (unsigned short*)test_Bitmap;
+    unsigned short* bmpPtr = (unsigned short*)testTiles;
+    for (n = 0; n < 256*8; n++)
+    {
+        SpriteData[n] = bmpPtr[n];
+    }
+    
+    // set up first sprite
+    sprites[0].attrib0 = COLOR_256 | y;
+    sprites[0].attrib1 = SIZE_64 | x;
+    sprites[0].attrib2 = charNumber;
+
+    while (1)
+    {
+        x += xdir;
+        if (x > 239 - shipWidth)
+        {
+            x = 0;
+        }
+
+        y += ydir;
+        if (y > 159 - shipHeight)
+        {
+            y = 159 - shipHeight;
+            ydir = -1;
+        }
+
+        if (y < 1)
+        {
+            y = 1;
+            ydir = 1;
+        }
+        
+        sprites[0].attrib0 = COLOR_256 | y;
+        sprites[0].attrib1 = SIZE_64 | x;
+        
+        VSync();
+        
+        UpdateSpriteMemory();
+    }
+    
+    return 0;
+}
+
